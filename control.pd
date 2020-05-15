@@ -1,0 +1,143 @@
+#N canvas 1120 -969 886 694 10;
+#N canvas 1731 -649 519 433 ADSR 0;
+#X obj 10 9 cnv 15 265 200 empty empty ADSR 120 12 0 14 -162280 -66577
+0;
+#X obj 26 48 vsl 30 128 0 127 0 0 empty empty ATTACK -4 -9 0 10 -1
+-262144 -1 5000 1;
+#X floatatom 26 189 5 0 0 0 - - -;
+#X obj 96 48 vsl 30 128 0 127 0 0 empty empty DECAY 0 -9 0 10 -1 -262144
+-1 5300 1;
+#X floatatom 94 190 5 0 0 0 - - -;
+#X obj 164 48 vsl 30 128 0 127 0 0 empty empty SUSTAIN -5 -9 0 10 -1
+-262144 -1 5400 1;
+#X floatatom 165 190 5 0 0 0 - - -;
+#X obj 231 48 vsl 30 128 0 127 0 0 empty empty RELEASE -6 -9 0 10 -1
+-262144 -1 7800 1;
+#X floatatom 231 188 5 0 0 0 - - -;
+#X obj 5 226 ctlout 102;
+#X obj 72 217 ctlout 103;
+#X obj 140 216 ctlout 104;
+#X obj 209 215 ctlout 105;
+#X obj 77 298 expr ($f1 * 20);
+#X obj 141 265 expr ($f1 * 20);
+#X obj 273 265 expr ($f1 * 20);
+#X connect 1 0 9 0;
+#X connect 1 0 13 0;
+#X connect 3 0 10 0;
+#X connect 3 0 14 0;
+#X connect 5 0 11 0;
+#X connect 5 0 6 0;
+#X connect 7 0 12 0;
+#X connect 7 0 15 0;
+#X connect 13 0 2 0;
+#X connect 14 0 4 0;
+#X connect 15 0 8 0;
+#X coords 0 -1 1 1 265 200 1 10 10;
+#X restore 597 31 pd ADSR;
+#N canvas -87 -552 450 309 MIXER 0;
+#X obj 10 10 cnv 15 265 200 empty empty MIXER 115 12 0 14 -162280 -66577
+0;
+#X obj 47 45 vsl 30 128 0 127 0 0 empty empty OSC-A -1 -9 0 10 -1 -262144
+-1 0 1;
+#X obj 130 45 vsl 30 128 0 127 0 0 empty empty OSC-B -1 -9 0 10 -1
+-262144 -1 0 1;
+#X obj 210 45 vsl 30 128 0 127 0 0 empty empty OSC-C -1 -9 0 10 -1
+-262144 -1 0 1;
+#X floatatom 210 185 5 0 0 0 - - -;
+#X floatatom 130 186 5 0 0 0 - - -;
+#X floatatom 47 186 5 0 0 0 - - -;
+#X obj 46 215 ctlout 29;
+#X obj 132 215 ctlout 30;
+#X obj 211 214 ctlout 31;
+#X connect 1 0 6 0;
+#X connect 2 0 5 0;
+#X connect 3 0 4 0;
+#X connect 4 0 9 0;
+#X connect 5 0 8 0;
+#X connect 6 0 7 0;
+#X coords 0 -1 1 1 265 200 1 10 10;
+#X restore 272 31 pd MIXER;
+#N canvas 11 -946 450 390 OSC 0;
+#X obj 10 10 cnv 15 250 250 empty empty OSCILLATORS 100 12 0 14 -162280
+-66577 0;
+#X obj 144 45 vradio 20 1 0 9 empty empty OSC-B -5 -8 0 10 -99865 -1
+-1 2;
+#X floatatom 139 238 5 0 0 0 - - -;
+#X text 67 48 SINE;
+#X obj 99 45 vradio 20 1 0 9 empty empty OSC-A -5 -8 0 10 -99865 -1
+-1 1;
+#X floatatom 93 235 5 0 0 0 - - -;
+#X text 56 88 SQUARE;
+#X text 41 110 TRIANGLE;
+#X text 42 69 SAWTOOTH;
+#X text 36 129 ARBITRARY;
+#X text 57 148 PULSE;
+#X text 24 168 SAW REVERSE;
+#X text 23 188 SAMPLE HOLD;
+#X text 20 207 TRIANGLE VAR;
+#X obj 25 300 ctlout 20;
+#X obj 97 303 ctlout 21;
+#X obj 190 45 vradio 20 1 0 9 empty empty OSC-C -5 -8 0 10 -99865 -1
+-1 6;
+#X floatatom 188 239 5 0 0 0 - - -;
+#X obj 166 302 ctlout 22;
+#X connect 1 0 2 0;
+#X connect 2 0 15 0;
+#X connect 4 0 5 0;
+#X connect 5 0 14 0;
+#X connect 16 0 17 0;
+#X connect 17 0 18 0;
+#X coords 0 -1 1 1 250 250 1 10 10;
+#X restore 10 31 pd OSC;
+#N canvas -82 -889 450 301 MIXER 0;
+#X obj 10 10 cnv 15 265 200 empty empty PULSE_WIDTH 90 12 0 14 -162280
+-66577 0;
+#X obj 47 45 vsl 30 128 0 127 0 0 empty empty OSC-A -1 -9 0 10 -1 -262144
+-1 0 1;
+#X obj 130 45 vsl 30 128 0 127 0 0 empty empty OSC-B -1 -9 0 10 -1
+-262144 -1 0 1;
+#X obj 210 45 vsl 30 128 0 127 0 0 empty empty OSC-C -1 -9 0 10 -1
+-262144 -1 0 1;
+#X floatatom 210 185 5 0 0 0 - - -;
+#X floatatom 130 186 5 0 0 0 - - -;
+#X floatatom 47 186 5 0 0 0 - - -;
+#X obj 46 215 ctlout 23;
+#X obj 132 217 ctlout 24;
+#X obj 211 217 ctlout 25;
+#X connect 1 0 6 0;
+#X connect 2 0 5 0;
+#X connect 3 0 4 0;
+#X connect 4 0 9 0;
+#X connect 5 0 8 0;
+#X connect 6 0 7 0;
+#X coords 0 -1 1 1 265 200 1 10 10;
+#X restore 272 237 pd MIXER;
+#N canvas -48 -921 565 502 MIXER 0;
+#X obj 10 10 cnv 15 265 200 empty empty PHASE 115 12 0 14 -162280 -66577
+0;
+#X obj 47 45 vsl 30 128 0 127 0 0 empty empty OSC-A -1 -9 0 10 -1 -262144
+-1 0 1;
+#X obj 130 45 vsl 30 128 0 127 0 0 empty empty OSC-B -1 -9 0 10 -1
+-262144 -1 0 1;
+#X obj 210 45 vsl 30 128 0 127 0 0 empty empty OSC-C -1 -9 0 10 -1
+-262144 -1 0 1;
+#X floatatom 209 185 5 0 0 0 - - -;
+#X floatatom 127 186 5 0 0 0 - - -;
+#X floatatom 45 186 5 0 0 0 - - -;
+#X obj 12 215 ctlout 26;
+#X obj 88 216 ctlout 27;
+#X obj 181 216 ctlout 28;
+#X obj 313 56 expr (($f1/127) * 360);
+#X obj 314 89 expr (($f1/127) * 360);
+#X obj 314 125 expr (($f1/127) * 360);
+#X connect 1 0 7 0;
+#X connect 1 0 10 0;
+#X connect 2 0 8 0;
+#X connect 2 0 11 0;
+#X connect 3 0 9 0;
+#X connect 3 0 12 0;
+#X connect 10 0 6 0;
+#X connect 11 0 5 0;
+#X connect 12 0 4 0;
+#X coords 0 -1 1 1 265 200 1 10 10;
+#X restore 273 444 pd MIXER;
