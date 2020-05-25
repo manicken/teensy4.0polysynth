@@ -10,6 +10,9 @@
 #include <SerialFlash.h>
 #include <MIDI.h>
 #include "GrandPiano_samples.h"
+#include "VelocityGrandPiano_samples.h"
+#include "MmmmHumSynth_samples.h"
+#include "ObieSynth1_samples.h"
 
 const int ledPin = 13;
 int ledState = LOW;             // ledState used to set the LED
@@ -123,7 +126,9 @@ void usbMidi_ControlChange(byte channel, byte control, byte value) {
           else if (value == 127)
             activateSustain();
           break;
-
+        case 0:
+          synth_set_InstrumentByIndex(value);
+          break;
         case 20: // OSC A waveform select
           synth_set_OSC_A_waveform(value);
           break;
@@ -211,7 +216,7 @@ void usbMidi_ControlChange(byte channel, byte control, byte value) {
         case 105:
           synth_set_envelope_release(value);
           break;
-        
+                 
         case 108:
           synth_set_OSC_A_freqMult(value);
           break;
@@ -222,38 +227,22 @@ void usbMidi_ControlChange(byte channel, byte control, byte value) {
           synth_set_OSC_C_freqMult(value);
           break;
 
-        case 119: // get all values
-          usbMIDI.sendControlChange(20, oscAwaveform, 0x00);
-          usbMIDI.sendControlChange(21, oscBwaveform, 0x00);
-          usbMIDI.sendControlChange(22, oscCwaveform, 0x00);
-          usbMIDI.sendControlChange(23, oscApulsewidth, 0x00);
-          usbMIDI.sendControlChange(24, oscBpulsewidth, 0x00);
-          usbMIDI.sendControlChange(25, oscCpulsewidth, 0x00);
-          usbMIDI.sendControlChange(26, oscAphase, 0x00);
-          usbMIDI.sendControlChange(27, oscBphase, 0x00);
-          usbMIDI.sendControlChange(28, oscCphase, 0x00);
-          usbMIDI.sendControlChange(29, oscAamp, 0x00);
-          usbMIDI.sendControlChange(30, oscBamp, 0x00);
-          usbMIDI.sendControlChange(31, oscCamp, 0x00);
-          usbMIDI.sendControlChange(32, oscDamp, 0x00);
-          usbMIDI.sendControlChange(33, mix1a_gain, 0x00);
-          usbMIDI.sendControlChange(34, mix1b_gain, 0x00);
-          usbMIDI.sendControlChange(35, mix1c_gain, 0x00);
-          usbMIDI.sendControlChange(36, mix1d_gain, 0x00);
-          usbMIDI.sendControlChange(37, mix2_gain0, 0x00);
-          usbMIDI.sendControlChange(38, mix2_gain1, 0x00);
-          usbMIDI.sendControlChange(39, mix2_gain2, 0x00);
-          usbMIDI.sendControlChange(40, mix2_gain3, 0x00);
-          usbMIDI.sendControlChange(100, envDelay, 0x00);
-          usbMIDI.sendControlChange(101, envAttack, 0x00);
-          usbMIDI.sendControlChange(102, envHold, 0x00);
-          usbMIDI.sendControlChange(103, envDecay, 0x00);
-          usbMIDI.sendControlChange(104, envSustain, 0x00);
-          usbMIDI.sendControlChange(105, envRelease, 0x00);
+        case 115: // set wavetable as primary (Piano mode)
+          synth_SetWaveTable_As_Primary();
+          break;
+        case 116:
+          synth_SetWaveForm_As_Primary();
+          break;
           
-          usbMIDI.sendControlChange(108, oscAfreqMult, 0x00);
-          usbMIDI.sendControlChange(109, oscBfreqMult, 0x00);
-          usbMIDI.sendControlChange(110, oscCfreqMult, 0x00);
+        case 117: // EEPROM read settings
+          synth_EEPROM_ReadSettings();
+          break;
+        case 118: // EEPROM save settings
+          synth_EEPROM_SaveSettings();
+          break;
+
+        case 119: // get all values
+          synth_sendAllSettings();
         break;
     }
 }
