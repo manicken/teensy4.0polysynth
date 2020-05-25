@@ -7,7 +7,7 @@
 #include <MIDI.h>
 #include <EEPROM.h>
 
-#define VOICE_COUNT 16
+#define VOICE_COUNT 32
 
 #define NOTE_OVERFLOWN_LED 6
 
@@ -24,14 +24,9 @@ byte oscAwaveform = WAVEFORM_SINE;
 byte oscBwaveform = WAVEFORM_SINE;
 byte oscCwaveform = WAVEFORM_SINE;
 
-byte mix1a_gain = 100;
-byte mix1b_gain = 100;
-byte mix1c_gain = 100;
-byte mix1d_gain = 100;
-byte mix2_gain0 = 100;
-byte mix2_gain1 = 100;
-byte mix2_gain2 = 100;
-byte mix2_gain3 = 100;
+byte mix1_gains = 100;
+byte mix2_gains = 100;
+byte mix3_gains = 100;
 
 byte oscAamp = 100;
 byte oscBamp = 100;
@@ -69,15 +64,10 @@ void synth_set_OSC_B_amplitude(byte value);
 void synth_set_OSC_C_amplitude(byte value);
 void synth_set_OSC_D_amplitude(byte value);
 
-void synth_set_mix1a_gain(byte value);
-void synth_set_mix1b_gain(byte value);
-void synth_set_mix1c_gain(byte value);
-void synth_set_mix1d_gain(byte value);
+void synth_set_mix1_gains(byte value);
+void synth_set_mix2_gains(byte value);
+void synth_set_mix3_gains(byte value);
 
-void synth_set_mix2_gain0(byte value);
-void synth_set_mix2_gain1(byte value);
-void synth_set_mix2_gain2(byte value);
-void synth_set_mix2_gain3(byte value);
 
 void synth_set_OSC_A_pulseWidth(byte value);
 void synth_set_OSC_B_pulseWidth(byte value);
@@ -217,7 +207,8 @@ class Voice
     }
 };
 
-Voice voices[] = {Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice()};
+Voice voices[] = {Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(),
+                  Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice(), Voice()};
 
 void noteOn(byte note, byte velocity)
 {
@@ -276,7 +267,15 @@ AudioMixer4 mix1a;
 AudioMixer4 mix1b;
 AudioMixer4 mix1c;
 AudioMixer4 mix1d;
-AudioMixer4 mix2;
+AudioMixer4 mix1e;
+AudioMixer4 mix1f;
+AudioMixer4 mix1g;
+AudioMixer4 mix1h;
+
+AudioMixer4 mix2a;
+AudioMixer4 mix2b;
+
+AudioMixer4 mix3;
 //AudioEffectFreeverb reverb;
 
 
@@ -296,6 +295,23 @@ AudioConnection patchCordVoice13(voices[12].env, 0, mix1d , 0);
 AudioConnection patchCordVoice14(voices[13].env, 0, mix1d , 1);
 AudioConnection patchCordVoice15(voices[14].env, 0, mix1d , 2);
 AudioConnection patchCordVoice16(voices[15].env, 0, mix1d , 3);
+
+AudioConnection patchCordVoice17(voices[16].env, 0, mix1e , 0);
+AudioConnection patchCordVoice18(voices[17].env, 0, mix1e , 1);
+AudioConnection patchCordVoice19(voices[18].env, 0, mix1e , 2);
+AudioConnection patchCordVoice20(voices[19].env, 0, mix1e , 3);
+AudioConnection patchCordVoice21(voices[20].env, 0, mix1f , 0);
+AudioConnection patchCordVoice22(voices[21].env, 0, mix1f , 1);
+AudioConnection patchCordVoice23(voices[22].env, 0, mix1f , 2);
+AudioConnection patchCordVoice24(voices[23].env, 0, mix1f , 3);
+AudioConnection patchCordVoice25(voices[24].env, 0, mix1g , 0);
+AudioConnection patchCordVoice26(voices[25].env, 0, mix1g , 1);
+AudioConnection patchCordVoice27(voices[26].env, 0, mix1g , 2);
+AudioConnection patchCordVoice28(voices[27].env, 0, mix1g , 3);
+AudioConnection patchCordVoice29(voices[28].env, 0, mix1h , 0);
+AudioConnection patchCordVoice30(voices[29].env, 0, mix1h , 1);
+AudioConnection patchCordVoice31(voices[30].env, 0, mix1h , 2);
+AudioConnection patchCordVoice32(voices[31].env, 0, mix1h , 3);
 /*
 AudioConnection patchCordVoice1(voices[0].mix, 0, mix1a , 0);
 AudioConnection patchCordVoice2(voices[1].mix, 0, mix1a , 1);
@@ -306,14 +322,22 @@ AudioConnection patchCordVoice6(voices[5].mix, 0, mix1b , 1);
 AudioConnection patchCordVoice7(voices[6].mix, 0, mix1b , 2);
 AudioConnection patchCordVoice8(voices[7].mix, 0, mix1b , 3);
 */
-AudioConnection patchCordMix1a(mix1a, 0, mix2, 0);
-AudioConnection patchCordMix1b(mix1b, 0, mix2, 1);
-AudioConnection patchCordMix1c(mix1c, 0, mix2, 2);
-AudioConnection patchCordMix1d(mix1d, 0, mix2, 3);
+AudioConnection patchCordMix1a(mix1a, 0, mix2a, 0);
+AudioConnection patchCordMix1b(mix1b, 0, mix2a, 1);
+AudioConnection patchCordMix1c(mix1c, 0, mix2a, 2);
+AudioConnection patchCordMix1d(mix1d, 0, mix2a, 3);
+AudioConnection patchCordMix1e(mix1e, 0, mix2b, 0);
+AudioConnection patchCordMix1f(mix1f, 0, mix2b, 1);
+AudioConnection patchCordMix1g(mix1g, 0, mix2b, 2);
+AudioConnection patchCordMix1h(mix1h, 0, mix2b, 3);
+
+AudioConnection patchCordMix2a(mix2a, 0, mix3, 0);
+AudioConnection patchCordMix2b(mix2b, 0, mix3, 1);
+
 //AudioConnection pc1(mix2, 0, reverb, 0);
 
-AudioConnection patchCordOutL(mix2, 0, i2s1, 0);
-AudioConnection patchCordOutR(mix2, 0, i2s1, 1);
+AudioConnection patchCordOutL(mix3, 0, i2s1, 0);
+AudioConnection patchCordOutR(mix3, 0, i2s1, 1);
 
 void synth_Init(void)
 {
@@ -331,7 +355,7 @@ void synth_set_InstrumentByIndex(byte index)
             synth_set_Instrument(VelocityGrandPiano);
             break;
         case 1:
-            synth_set_Instrument(GrandPiano);
+            //synth_set_Instrument(GrandPiano);
             break;
         case 2:
             synth_set_Instrument(MmmmHumSynth);
@@ -476,65 +500,71 @@ void synth_set_OSC_D_amplitude(byte value)
         voices[i].mix.gain(3, value*DIV100);
     }
 }
-void synth_set_mix1a_gain(byte value)
+void synth_set_mix1_gains(byte value)
 {
     if (value > 100) value = 100;
-    mix1a_gain = value;
+    mix1_gains = value;
     mix1a.gain(0, value*DIV100);
     mix1a.gain(1, value*DIV100);
     mix1a.gain(2, value*DIV100);
     mix1a.gain(3, value*DIV100);
-}
-void synth_set_mix1b_gain(byte value)
-{
-    if (value > 100) value = 100;
-    mix1b_gain = value;
+
     mix1b.gain(0, value*DIV100);
     mix1b.gain(1, value*DIV100);
     mix1b.gain(2, value*DIV100);
     mix1b.gain(3, value*DIV100);
-}
-void synth_set_mix1c_gain(byte value)
-{
-    if (value > 100) value = 100;
-    mix1c_gain = value;
+
     mix1c.gain(0, value*DIV100);
     mix1c.gain(1, value*DIV100);
     mix1c.gain(2, value*DIV100);
     mix1c.gain(3, value*DIV100);
-}
-void synth_set_mix1d_gain(byte value)
-{
-    if (value > 100) value = 100;
-    mix1d_gain = value;
+
     mix1d.gain(0, value*DIV100);
     mix1d.gain(1, value*DIV100);
     mix1d.gain(2, value*DIV100);
     mix1d.gain(3, value*DIV100);
+
+    mix1e.gain(0, value*DIV100);
+    mix1e.gain(1, value*DIV100);
+    mix1e.gain(2, value*DIV100);
+    mix1e.gain(3, value*DIV100);
+
+    mix1f.gain(0, value*DIV100);
+    mix1f.gain(1, value*DIV100);
+    mix1f.gain(2, value*DIV100);
+    mix1f.gain(3, value*DIV100);
+
+    mix1g.gain(0, value*DIV100);
+    mix1g.gain(1, value*DIV100);
+    mix1g.gain(2, value*DIV100);
+    mix1g.gain(3, value*DIV100);
+
+    mix1h.gain(0, value*DIV100);
+    mix1h.gain(1, value*DIV100);
+    mix1h.gain(2, value*DIV100);
+    mix1h.gain(3, value*DIV100);
 }
-void synth_set_mix2_gain0(byte value)
+
+void synth_set_mix2_gains(byte value)
 {
     if (value > 100) value = 100;
-    mix2_gain0 = value;
-    mix2.gain(0, value*DIV100);
+    mix2_gains = value;
+    mix2a.gain(0, value*DIV100);
+    mix2a.gain(1, value*DIV100);
+    mix2a.gain(2, value*DIV100);
+    mix2a.gain(3, value*DIV100);
+
+    mix2b.gain(0, value*DIV100);
+    mix2b.gain(1, value*DIV100);
+    mix2b.gain(2, value*DIV100);
+    mix2b.gain(3, value*DIV100);
 }
-void synth_set_mix2_gain1(byte value)
+void synth_set_mix3_gains(byte value)
 {
     if (value > 100) value = 100;
-    mix2_gain1 = value;
-    mix2.gain(1, value*DIV100);
-}
-void synth_set_mix2_gain2(byte value)
-{
-    if (value > 100) value = 100;
-    mix2_gain2 = value;
-    mix2.gain(2, value*DIV100);
-}
-void synth_set_mix2_gain3(byte value)
-{
-    if (value > 100) value = 100;
-    mix2_gain3 = value;
-    mix2.gain(3, value*DIV100);
+    mix3_gains = value;
+    mix3.gain(0, value*DIV100);
+    mix3.gain(1, value*DIV100);
 }
 
 void synth_set_envelope_delay(byte value)
@@ -613,14 +643,9 @@ void synth_SetWaveTable_As_Primary()
     synth_set_OSC_B_amplitude(0);
     synth_set_OSC_C_amplitude(0);
     synth_set_OSC_D_amplitude(100);
-    synth_set_mix1a_gain(100);
-    synth_set_mix1b_gain(100);
-    synth_set_mix1c_gain(100);
-    synth_set_mix1d_gain(100);
-    synth_set_mix2_gain0(100);
-    synth_set_mix2_gain1(100);
-    synth_set_mix2_gain2(100);
-    synth_set_mix2_gain3(100);
+    synth_set_mix1_gains(100);
+    synth_set_mix2_gains(100);
+    synth_set_mix3_gains(100);
 }
 
 void synth_SetWaveForm_As_Primary()
@@ -629,14 +654,9 @@ void synth_SetWaveForm_As_Primary()
     synth_set_OSC_B_amplitude(100);
     synth_set_OSC_C_amplitude(100);
     synth_set_OSC_D_amplitude(0);
-    synth_set_mix1a_gain(25);
-    synth_set_mix1b_gain(25);
-    synth_set_mix1c_gain(25);
-    synth_set_mix1d_gain(25);
-    synth_set_mix2_gain0(25);
-    synth_set_mix2_gain1(25);
-    synth_set_mix2_gain2(25);
-    synth_set_mix2_gain3(25);
+    synth_set_mix1_gains(25);
+    synth_set_mix2_gains(25);
+    synth_set_mix3_gains(50);
 }
 
 void synth_sendAllSettings()
@@ -654,14 +674,9 @@ void synth_sendAllSettings()
     usbMIDI.sendControlChange(30, oscBamp, 0x00);
     usbMIDI.sendControlChange(31, oscCamp, 0x00);
     usbMIDI.sendControlChange(32, oscDamp, 0x00);
-    usbMIDI.sendControlChange(33, mix1a_gain, 0x00);
-    usbMIDI.sendControlChange(34, mix1b_gain, 0x00);
-    usbMIDI.sendControlChange(35, mix1c_gain, 0x00);
-    usbMIDI.sendControlChange(36, mix1d_gain, 0x00);
-    usbMIDI.sendControlChange(37, mix2_gain0, 0x00);
-    usbMIDI.sendControlChange(38, mix2_gain1, 0x00);
-    usbMIDI.sendControlChange(39, mix2_gain2, 0x00);
-    usbMIDI.sendControlChange(40, mix2_gain3, 0x00);
+    usbMIDI.sendControlChange(33, mix1_gains, 0x00);
+    usbMIDI.sendControlChange(34, mix2_gains, 0x00);
+    usbMIDI.sendControlChange(35, mix3_gains, 0x00);
     usbMIDI.sendControlChange(100, envDelay, 0x00);
     usbMIDI.sendControlChange(101, envAttack, 0x00);
     usbMIDI.sendControlChange(102, envHold, 0x00);
@@ -693,15 +708,10 @@ void synth_EEPROM_SaveSettings()
     EEPROM.write(31, oscCamp);
     EEPROM.write(32, oscDamp);
 
-    EEPROM.write(33, mix1a_gain);
-    EEPROM.write(34, mix1b_gain);
-    EEPROM.write(35, mix1c_gain);
-    EEPROM.write(36, mix1d_gain);
-
-    EEPROM.write(37, mix2_gain0);
-    EEPROM.write(38, mix2_gain1);
-    EEPROM.write(39, mix2_gain2);
-    EEPROM.write(40, mix2_gain3);
+    EEPROM.write(33, mix1_gains);
+    EEPROM.write(34, mix2_gains);
+    EEPROM.write(35, mix3_gains);
+    
 
     EEPROM.write(100, envDelay);
     EEPROM.write(101, envAttack);
@@ -732,16 +742,10 @@ void synth_EEPROM_ReadSettings()
     synth_set_OSC_B_amplitude(EEPROM.read(30));
     synth_set_OSC_C_amplitude(EEPROM.read(31));
 
-    synth_set_mix1a_gain(EEPROM.read(33));
-    synth_set_mix1b_gain(EEPROM.read(34));
-    synth_set_mix1c_gain(EEPROM.read(35));
-    synth_set_mix1d_gain(EEPROM.read(36));
-
-    synth_set_mix2_gain0(EEPROM.read(37));
-    synth_set_mix2_gain1(EEPROM.read(38));
-    synth_set_mix2_gain2(EEPROM.read(39));
-    synth_set_mix2_gain3(EEPROM.read(40));
-    
+    synth_set_mix1_gains(EEPROM.read(33));
+    synth_set_mix2_gains(EEPROM.read(34));
+    synth_set_mix3_gains(EEPROM.read(35));
+        
     synth_set_envelope_delay(EEPROM.read(100));
     synth_set_envelope_attack(EEPROM.read(101));
     synth_set_envelope_hold(EEPROM.read(102));

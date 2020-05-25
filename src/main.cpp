@@ -9,7 +9,7 @@
 #include <SD.h>
 #include <SerialFlash.h>
 #include <MIDI.h>
-#include "GrandPiano_samples.h"
+//#include "GrandPiano_samples.h"
 #include "VelocityGrandPiano_samples.h"
 #include "MmmmHumSynth_samples.h"
 #include "ObieSynth1_samples.h"
@@ -173,30 +173,15 @@ void usbMidi_ControlChange(byte channel, byte control, byte value) {
           break;
 
         case 33: 
-          synth_set_mix1a_gain(value);
+          synth_set_mix1_gains(value);
           break;
         case 34: 
-          synth_set_mix1b_gain(value);
+          synth_set_mix2_gains(value);
           break;
         case 35: 
-          synth_set_mix1c_gain(value);
+          synth_set_mix3_gains(value);
           break;
-        case 36: 
-          synth_set_mix1d_gain(value);
-          break;
-
-        case 37: 
-          synth_set_mix2_gain0(value);
-          break;
-        case 38: 
-          synth_set_mix2_gain1(value);
-          break;
-        case 39: 
-          synth_set_mix2_gain2(value);
-          break;
-        case 40: 
-          synth_set_mix2_gain3(value);
-          break;
+        
 
         case 100:
           synth_set_envelope_delay(value);
