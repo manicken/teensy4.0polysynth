@@ -9,10 +9,7 @@
 #include <SD.h>
 #include <SerialFlash.h>
 #include <MIDI.h>
-//#include "GrandPiano_samples.h"
-#include "VelocityGrandPiano_samples.h"
-#include "MmmmHumSynth_samples.h"
-#include "ObieSynth1_samples.h"
+
 
 const int ledPin = 13;
 int ledState = LOW;             // ledState used to set the LED
@@ -22,9 +19,20 @@ unsigned long currentInterval = 0;
 unsigned long ledBlinkOnInterval = 100;
 unsigned long ledBlinkOffInterval = 2000;
 
-const int btnInEnablePin = 23;
-const int btnSustainPin = 22;
-byte btnSustainWasPressed = 0;
+#define btnInEnablePin 9
+#define btnSustainPin 23
+#define btnSostenutoPin 22
+#define btnSoftPedalPin 21
+uint8_t btnSustain = 0;
+uint8_t btnSostenuto = 0;
+uint8_t btnSoftPedal = 0;
+uint8_t btnSustainWasPressed = 0;
+uint8_t btnSostenutoWasPressed = 0;
+uint8_t btnSoftPedalWasPressed = 0;
+
+#define btnNextInstrumentPin 20
+uint8_t btnNextInstrument = 0;
+uint8_t btnNextInstrumentWasPressed = 0;
 
 void uartMidi_NoteOn(byte channel, byte note, byte velocity);
 void uartMidi_NoteOff(byte channel, byte note, byte velocity);
@@ -37,9 +45,11 @@ void usbMidi_ControlChange(byte channel, byte control, byte value);
 void usbMidi_PitchBend(byte channel, int value);
 
 void blinkLedTask(void);
-void pedalProcessTask(void);
+void btnInputProcessTask(void);
 
 #include "Synth.h"
+
+Synth synth;
   
 #define KEYBOARD_NOTE_SHIFT_CORRECTION 21//-12
 
@@ -60,9 +70,13 @@ void setup()
   usbMIDI.setHandleControlChange(usbMidi_ControlChange);
   usbMIDI.setHandlePitchChange(usbMidi_PitchBend);
 
-  synth_Init();
+  synth.Begin();
 
   pinMode(btnSustainPin, INPUT);
+  pinMode(btnSostenutoPin, INPUT);
+  pinMode(btnSoftPedalPin, INPUT);
+  pinMode(btnNextInstrumentPin, INPUT);
+
   pinMode(btnInEnablePin, OUTPUT);
   digitalWrite(btnInEnablePin, LOW);
 
@@ -70,8 +84,9 @@ void setup()
   digitalWrite(ledPin, LOW);
 
   btnSustainWasPressed = 0;
-
-  
+  btnSoftPedalWasPressed = 0;
+  btnSostenutoWasPressed = 0;
+  btnNextInstrumentWasPressed = 0;
 }
 
 void loop()
@@ -79,7 +94,7 @@ void loop()
     usbMIDI.read();
     MIDI.read();
 
-    pedalProcessTask();
+    btnInputProcessTask();
     
     blinkLedTask();
 }
@@ -87,14 +102,14 @@ void loop()
 void uartMidi_NoteOn(byte channel, byte note, byte velocity) {
     note += KEYBOARD_NOTE_SHIFT_CORRECTION;
     velocity = 127 - velocity;
-    noteOn(note, velocity);
+    synth.noteOn(note, velocity);
     usbMIDI.sendNoteOn(note, velocity, channel, 0);
 }
 
 void uartMidi_NoteOff(byte channel, byte note, byte velocity) {
     note += KEYBOARD_NOTE_SHIFT_CORRECTION;
     velocity = 127 - velocity;
-    noteOff(note, velocity);
+    synth.noteOff(note, velocity);
     usbMIDI.sendNoteOff(note, velocity, channel, 0);
 }
 
@@ -107,11 +122,11 @@ void uartMidi_PitchBend(byte channel, int value) {
 }
 
 void usbMidi_NoteOn(byte channel, byte note, byte velocity) {
-    noteOn(note, velocity);
+    synth.noteOn(note, velocity);
 }
 
 void usbMidi_NoteOff(byte channel, byte note, byte velocity) {
-    noteOff(note, velocity);    
+    synth.noteOff(note, velocity);    
 }
 
 void usbMidi_PitchBend(byte channel, int value) {
@@ -122,131 +137,163 @@ void usbMidi_ControlChange(byte channel, byte control, byte value) {
     switch (control) { // cases 20-31,102-119 is undefined in midi spec
         case 64:
           if (value == 0)
-            deactivateSustain();
+            synth.deactivateSustain();
           else if (value == 127)
-            activateSustain();
+            synth.activateSustain();
           break;
         case 0:
-          synth_set_InstrumentByIndex(value);
+          synth.set_InstrumentByIndex(value);
           break;
         case 20: // OSC A waveform select
-          synth_set_OSC_A_waveform(value);
+          synth.set_OSC_A_waveform(value);
           break;
         case 21: // OSC B waveform select
-          synth_set_OSC_B_waveform(value);
+          synth.set_OSC_B_waveform(value);
           break;
         case 22: // OSC C waveform select
-          synth_set_OSC_C_waveform(value);
+          synth.set_OSC_C_waveform(value);
           break;
 
         case 23:
-          synth_set_OSC_A_pulseWidth(value);
+          synth.set_OSC_A_pulseWidth(value);
           break;
         case 24:
-          synth_set_OSC_B_pulseWidth(value);
+          synth.set_OSC_B_pulseWidth(value);
           break;
         case 25:
-          synth_set_OSC_C_pulseWidth(value);
+          synth.set_OSC_C_pulseWidth(value);
           break;
 
         case 26:
-          synth_set_OSC_A_phase(value);
+          synth.set_OSC_A_phase(value);
           break;
         case 27:
-          synth_set_OSC_B_phase(value);
+          synth.set_OSC_B_phase(value);
           break;
         case 28:
-          synth_set_OSC_C_phase(value);
+          synth.set_OSC_C_phase(value);
           break;
 
         case 29:
-          synth_set_OSC_A_amplitude(value);
+          synth.set_OSC_A_amplitude(value);
           break;
         case 30:
-          synth_set_OSC_B_amplitude(value);
+          synth.set_OSC_B_amplitude(value);
           break;
         case 31:
-          synth_set_OSC_C_amplitude(value);
+          synth.set_OSC_C_amplitude(value);
           break;
         case 32: //("LSB for Control 0 (Bank Select)" @ midi spec.)
-          synth_set_OSC_D_amplitude(value);
+          synth.set_OSC_D_amplitude(value);
           break;
 
         case 33: 
-          synth_set_mix1_gains(value);
-          break;
-        case 34: 
-          synth_set_mix2_gains(value);
-          break;
-        case 35: 
-          synth_set_mix3_gains(value);
+          synth.set_mixVoices_gains(value);
           break;
         
-
         case 100:
-          synth_set_envelope_delay(value);
+          synth.set_envelope_delay(value);
           break;
         case 101:
-          synth_set_envelope_attack(value);
+          synth.set_envelope_attack(value);
           break;
         case 102:
-          synth_set_envelope_hold(value);
+          synth.set_envelope_hold(value);
           break;
         case 103:
-          synth_set_envelope_decay(value);
+          synth.set_envelope_decay(value);
           break;
         case 104:
-          synth_set_envelope_sustain(value);
+          synth.set_envelope_sustain(value);
           break;
         case 105:
-          synth_set_envelope_release(value);
+          synth.set_envelope_release(value);
           break;
                  
         case 108:
-          synth_set_OSC_A_freqMult(value);
+          synth.set_OSC_A_freqMult(value);
           break;
         case 109:
-          synth_set_OSC_B_freqMult(value);
+          synth.set_OSC_B_freqMult(value);
           break;
         case 110:
-          synth_set_OSC_C_freqMult(value);
+          synth.set_OSC_C_freqMult(value);
           break;
 
         case 115: // set wavetable as primary (Piano mode)
-          synth_SetWaveTable_As_Primary();
+          synth.SetWaveTable_As_Primary();
           break;
         case 116:
-          synth_SetWaveForm_As_Primary();
+          synth.SetWaveForm_As_Primary();
           break;
           
         case 117: // EEPROM read settings
-          synth_EEPROM_ReadSettings();
+          synth.EEPROM_ReadSettings();
           break;
         case 118: // EEPROM save settings
-          synth_EEPROM_SaveSettings();
+          synth.EEPROM_SaveSettings();
           break;
 
         case 119: // get all values
-          synth_sendAllSettings();
+          synth.sendAllSettings();
         break;
     }
 }
 
-void pedalProcessTask(void)
+void btnInputProcessTask(void)
 {
-  if ((digitalRead(btnSustainPin) == LOW) && (btnSustainWasPressed == 0))
+  btnSustain = digitalRead(btnSustainPin);
+  btnSostenuto = digitalRead(btnSostenutoPin);
+  btnSoftPedal = digitalRead(btnSoftPedalPin);
+  btnNextInstrument = digitalRead(btnNextInstrumentPin);
+
+    // Sustain pedal
+    if ((btnSustain == LOW) && (btnSustainWasPressed == 0))
     {
         btnSustainWasPressed = 1;
         usbMIDI.sendControlChange(0x40, 0x7F, 0x00);
-        activateSustain();
-        //usbMIDI.sendSysEx(5, "HELLO");
+        synth.activateSustain();
     }
-    else if ((digitalRead(btnSustainPin) == HIGH) && (btnSustainWasPressed == 1))
+    else if ((btnSustain == HIGH) && (btnSustainWasPressed == 1))
     {
         btnSustainWasPressed = 0;
         usbMIDI.sendControlChange(0x40, 0x00, 0x00);
-        deactivateSustain();
-        //usbMIDI.sendSysEx(5, "HELLO");
+        synth.deactivateSustain();
+    }
+    // Sostenuto Pedal
+    if ((btnSostenuto == LOW) && (btnSostenutoWasPressed == 0))
+    {
+        btnSostenutoWasPressed = 1;
+        usbMIDI.sendControlChange(0x42, 0x7F, 0x00);
+    }
+    else if ((btnSostenuto == HIGH) && (btnSostenutoWasPressed == 1))
+    {
+        btnSostenutoWasPressed = 0;
+        usbMIDI.sendControlChange(0x42, 0x00, 0x00);
+    }
+    // Soft Pedal
+    if ((btnSoftPedal == LOW) && (btnSoftPedalWasPressed == 0))
+    {
+        btnSoftPedalWasPressed = 1;
+        usbMIDI.sendControlChange(0x43, 0x7F, 0x00);
+    }
+    else if ((btnSoftPedal == HIGH) && (btnSoftPedalWasPressed == 1))
+    {
+        btnSoftPedalWasPressed = 0;
+        usbMIDI.sendControlChange(0x43, 0x00, 0x00);
+    }
+    // Next Instrument button
+    if ((btnNextInstrument == LOW) && (btnNextInstrumentWasPressed == 0))
+    {
+        btnNextInstrumentWasPressed = 1;
+        if (synth.currentWTinstrument == (InstrumentCount - 1)) synth.currentWTinstrument = 0;
+        else synth.currentWTinstrument++;
+        synth.set_InstrumentByIndex(synth.currentWTinstrument);
+        usbMIDI.sendControlChange(0, synth.currentWTinstrument, 0x00);
+    }
+    else if ((btnNextInstrument == HIGH) && (btnNextInstrumentWasPressed == 1))
+    {
+        btnNextInstrumentWasPressed = 0;
     }
 }
 
